@@ -12,6 +12,12 @@ const API_BASE = window.__API_BASE__ || 'http://localhost:3000';
 
 // ===== INITIALIZE GOOGLE API =====
 function initializeGoogleAPI() {
+  if (!window.gapi) {
+    console.warn('Google API not loaded. Showing auth required state.');
+    showAuthRequired();
+    return;
+  }
+  
   gapi.load('client:auth2', () => {
     gapi.client.init({
       apiKey: GOOGLE_API_KEY,
@@ -23,14 +29,24 @@ function initializeGoogleAPI() {
       updateAuthUI();
     }).catch(err => {
       console.error('Failed to initialize Google API:', err);
-      showErrorState('Failed to initialize Google Calendar. Please check your API credentials.');
+      showErrorState('Failed to initialize Google Calendar. Please check your API credentials in events.js');
+      showAuthRequired();
     });
   });
 }
 
 // ===== AUTH BUTTON HANDLERS =====
-document.getElementById('connectGoogleBtn').addEventListener('click', handleAuthClick);
-document.getElementById('disconnectBtn').addEventListener('click', handleSignoutClick);
+function attachEventListeners() {
+  const connectBtn = document.getElementById('connectGoogleBtn');
+  const disconnectBtn = document.getElementById('disconnectBtn');
+  
+  if (connectBtn) {
+    connectBtn.addEventListener('click', handleAuthClick);
+  }
+  if (disconnectBtn) {
+    disconnectBtn.addEventListener('click', handleSignoutClick);
+  }
+}
 
 function handleAuthClick() {
   if (!gapi_loaded) {
