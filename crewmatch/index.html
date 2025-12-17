@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CrewMatch - Find Your Perfect Team</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://apis.google.com/js/client.js"></script>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -152,38 +153,12 @@
     <!-- Events Section -->
     <section id="events" class="events">
         <h2 class="section-title">Upcoming Events</h2>
-        <div class="events-carousel">
-            <div class="event-card">
-                <div class="event-image coding"></div>
-                <h3>Hackathon 2025</h3>
-                <p class="event-date">📅 Dec 15-17, 2025</p>
-                <p class="event-description">24-hour coding marathon. Build innovative solutions and win prizes!</p>
-                <button class="event-btn">Join Now</button>
-            </div>
-
-            <div class="event-card">
-                <div class="event-image design"></div>
-                <h3>Design Challenge</h3>
-                <p class="event-date">📅 Dec 22, 2025</p>
-                <p class="event-description">Showcase your UI/UX skills. Design the next big thing.</p>
-                <button class="event-btn">Join Now</button>
-            </div>
-
-            <div class="event-card">
-                <div class="event-image sports"></div>
-                <h3>Sports Tournament</h3>
-                <p class="event-date">📅 Jan 5, 2026</p>
-                <p class="event-description">Team up for basketball, volleyball, and esports competitions.</p>
-                <button class="event-btn">Join Now</button>
-            </div>
-
-            <div class="event-card">
-                <div class="event-image startup"></div>
-                <h3>Startup Pitch</h3>
-                <p class="event-date">📅 Jan 20, 2026</p>
-                <p class="event-description">Pitch your startup idea and find co-founders and investors.</p>
-                <button class="event-btn">Join Now</button>
-            </div>
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <p id="eventsStatusText" style="color: #b0b0d0; font-size: 0.95rem;">Loading events from Google Calendar...</p>
+            <button id="connectGoogleHomeBtn" class="cta-btn" style="display: none; margin-top: 0.5rem;">🔗 Connect Your Google Calendar</button>
+        </div>
+        <div class="events-carousel" id="eventsCarousel">
+            <!-- Events will be loaded dynamically from Google Calendar -->
         </div>
     </section>
 
