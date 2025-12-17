@@ -230,7 +230,6 @@
                 <div class="user-profile-summary">
                     <h3>Your Profile</h3>
                     <div id="profileSummary" class="summary-content">
-                        <!-- Will be filled by JavaScript -->
                     </div>
                 </div>
 
@@ -255,6 +254,31 @@
                     <button class="btn btn-success" onclick="startMessaging()">💬 Start Messaging Matches</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:2000;">
+        <div class="modal-content" style="background:#0f0f1e; border-radius:12px; padding:1.25rem; width:min(720px,95%); color:#fff; max-height:85%; overflow:auto;">
+            <button id="closeProfileModal" style="float:right; background:none; border:none; font-size:1.2rem; color:#fff;">✖</button>
+            <div id="profileModalBody"></div>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:2000;">
+        <div class="modal-content" style="background:#0f0f1e; border-radius:12px; padding:0.75rem; width:min(540px,95%); color:#fff; max-height:85%; display:flex; flex-direction:column;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0;">
+                <strong id="chatWithName">Chat</strong>
+                <div>
+                    <button id="closeChatModal" style="background:none; border:none; font-size:1.1rem; color:#fff;">✖</button>
+                </div>
+            </div>
+            <div id="chatMessages" style="flex:1; overflow:auto; padding:0.5rem 0; margin-bottom:0.5rem;"></div>
+            <form id="chatForm" style="display:flex; gap:0.5rem;">
+                <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:#0b0b12; color:#fff;" required />
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
         </div>
     </div>
 

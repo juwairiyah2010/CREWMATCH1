@@ -372,12 +372,99 @@ function createMatchCard(match) {
 }
 
 // ===== ACTION FUNCTIONS =====
+// Find candidate by name (case-insensitive)
+function findCandidateByName(name) {
+  if (!name) return null;
+  const low = name.toLowerCase();
+  return teammateCandidates.find(c => c.name && c.name.toLowerCase() === low) || null;
+}
+
 function connectWithMatch(name) {
-  showSuccess(`✨ You've connected with ${name}! Check your messages to start chatting.`);
+  const candidate = findCandidateByName(name);
+  if (!candidate) {
+    showError(`Could not find profile for ${name}`);
+    return;
+  }
+  openChatModal(candidate.name);
 }
 
 function viewProfile(name) {
-  showInfo(`📋 Viewing full profile of ${name}...`);
+  const candidate = findCandidateByName(name);
+  if (!candidate) {
+    showError(`Could not find profile for ${name}`);
+    return;
+  }
+  openProfileModal(candidate);
+}
+
+// Modal helpers
+function openProfileModal(candidate) {
+  const modal = document.getElementById('profileModal');
+  const body = document.getElementById('profileModalBody');
+  body.innerHTML = `
+    <h2 style="margin-top:0;">${candidate.name}</h2>
+    <p style="color:#b0b0d0; margin:0.25rem 0;">${formatBranchName(candidate.branch)} · ${formatGoalName(candidate.goal)}</p>
+    <div style="margin:0.5rem 0;">${candidate.bio}</div>
+    <div style="margin-top:0.5rem;"><strong>Skills</strong><div style="margin-top:0.5rem;">${candidate.skills.map(s=>`<span style=\"display:inline-block;margin:0.2rem 0.3rem;padding:0.25rem 0.6rem;border-radius:8px;background:rgba(255,255,255,0.04);\">${formatSkillName(s)}</span>`).join('')}</div></div>
+  `;
+  modal.style.display = 'flex';
+}
+
+function closeProfileModal() {
+  const modal = document.getElementById('profileModal');
+  modal.style.display = 'none';
+}
+
+function openChatModal(name) {
+  const modal = document.getElementById('chatModal');
+  const title = document.getElementById('chatWithName');
+  title.textContent = `Chat with ${name}`;
+  modal.style.display = 'flex';
+  renderChatMessages(name);
+  // store current chat target
+  modal.dataset.chatWith = name;
+}
+
+function closeChatModal() {
+  const modal = document.getElementById('chatModal');
+  modal.style.display = 'none';
+  delete modal.dataset.chatWith;
+}
+
+function chatStorageKey(name) {
+  return `crewmatch_chat_${name}`;
+}
+
+function renderChatMessages(name) {
+  const messagesEl = document.getElementById('chatMessages');
+  messagesEl.innerHTML = '';
+  const key = chatStorageKey(name);
+  const raw = localStorage.getItem(key) || '[]';
+  let msgs = [];
+  try { msgs = JSON.parse(raw); } catch(e) { msgs = []; }
+  msgs.forEach(m => {
+    const el = document.createElement('div');
+    el.style.margin = '0.25rem 0';
+    el.style.padding = '0.45rem 0.6rem';
+    el.style.borderRadius = '8px';
+    el.style.maxWidth = '80%';
+    el.style.background = m.sentBy === 'me' ? 'linear-gradient(90deg,#5b21b6,#7c3aed)' : 'rgba(255,255,255,0.04)';
+    el.style.color = m.sentBy === 'me' ? '#fff' : '#e6e6e6';
+    el.textContent = m.text;
+    el.style.alignSelf = m.sentBy === 'me' ? 'flex-end' : 'flex-start';
+    messagesEl.appendChild(el);
+  });
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function sendChatMessage(name, text) {
+  const key = chatStorageKey(name);
+  const raw = localStorage.getItem(key) || '[]';
+  let msgs = [];
+  try { msgs = JSON.parse(raw); } catch(e) { msgs = []; }
+  msgs.push({ text, sentBy: 'me', ts: Date.now() });
+  localStorage.setItem(key, JSON.stringify(msgs));
+  renderChatMessages(name);
 }
 
 function refineMatching() {
@@ -465,6 +552,29 @@ function formatTraitName(trait) {
   };
   return traits[trait] || trait;
 }
+
+// Wire modal buttons and chat form after DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  const closeProfileBtn = document.getElementById('closeProfileModal');
+  if (closeProfileBtn) closeProfileBtn.addEventListener('click', closeProfileModal);
+
+  const closeChatBtn = document.getElementById('closeChatModal');
+  if (closeChatBtn) closeChatBtn.addEventListener('click', closeChatModal);
+
+  const chatForm = document.getElementById('chatForm');
+  if (chatForm) {
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const modal = document.getElementById('chatModal');
+      const name = modal?.dataset?.chatWith;
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!name || !text) return;
+      sendChatMessage(name, text);
+      input.value = '';
+    });
+  }
+});
 
 // ===== LOCATION DATA & GOOGLE MAPS =====
 const campusLocations = [
