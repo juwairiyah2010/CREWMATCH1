@@ -11,6 +11,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const API_BASE = process.env.API_BASE || `http://localhost:${PORT}`;
 
 let pool;
 async function initDb() {
@@ -75,6 +76,57 @@ async function initDb() {
       FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
       FOREIGN KEY (inviter_email) REFERENCES profiles(email) ON DELETE CASCADE,
       FOREIGN KEY (invitee_email) REFERENCES profiles(email) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS groups (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      creator_email VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (creator_email) REFERENCES profiles(email) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS group_members (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      group_id INT NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      role ENUM('admin', 'member') DEFAULT 'member',
+      joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY unique_member (group_id, email),
+      FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+      FOREIGN KEY (email) REFERENCES profiles(email) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      group_id INT NOT NULL,
+      sender_email VARCHAR(255) NOT NULL,
+      content TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+      FOREIGN KEY (sender_email) REFERENCES profiles(email) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS connections (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user1_email VARCHAR(255) NOT NULL,
+      user2_email VARCHAR(255) NOT NULL,
+      status ENUM('pending', 'accepted', 'blocked') DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY unique_connection (user1_email, user2_email),
+      FOREIGN KEY (user1_email) REFERENCES profiles(email) ON DELETE CASCADE,
+      FOREIGN KEY (user2_email) REFERENCES profiles(email) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 }
@@ -179,7 +231,213 @@ app.get('/api/matches', async (req, res) => {
   }
 });
 
-// ===== GOOGLE CALENDAR ENDPOINTS =====
+// ===== GROUPS ENDPOINTS =====
+
+// Create a new group
+app.post('/api/groups', async (req, res) => {
+  const { name, description, creatorEmail } = req.body;
+  if (!name || !creatorEmail) {
+    return res.status(400).json({ error: 'name and creatorEmail required' });
+  }
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO groups (name, description, creator_email) VALUES (?, ?, ?)',
+      [name, description || null, creatorEmail]
+    );
+    const groupId = result.insertId;
+    
+    // Add creator as admin
+    await pool.query(
+      'INSERT INTO group_members (group_id, email, role) VALUES (?, ?, ?)',
+      [groupId, creatorEmail, 'admin']
+    );
+    
+    res.json({ ok: true, groupId });
+  } catch (err) {
+    console.error('create group error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Get all groups for a user
+app.get('/api/groups', async (req, res) => {
+  const email = req.query.email;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    const [groups] = await pool.query(
+      `SELECT DISTINCT g.* FROM groups g
+       INNER JOIN group_members gm ON g.id = gm.group_id
+       WHERE gm.email = ?
+       ORDER BY g.created_at DESC`,
+      [email]
+    );
+    res.json({ groups });
+  } catch (err) {
+    console.error('fetch groups error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Get group details
+app.get('/api/groups/:groupId', async (req, res) => {
+  const { groupId } = req.params;
+  try {
+    const [groupRows] = await pool.query('SELECT * FROM groups WHERE id = ?', [groupId]);
+    if (!groupRows || groupRows.length === 0) return res.status(404).json({ error: 'group not found' });
+    
+    const [members] = await pool.query(
+      `SELECT gm.*, p.fullName, p.branch, p.skills
+       FROM group_members gm
+       JOIN profiles p ON gm.email = p.email
+       WHERE gm.group_id = ?`,
+      [groupId]
+    );
+
+    res.json({ group: groupRows[0], members });
+  } catch (err) {
+    console.error('fetch group error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Add member to group
+app.post('/api/groups/:groupId/members', async (req, res) => {
+  const { groupId } = req.params;
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    await pool.query(
+      'INSERT INTO group_members (group_id, email, role) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE role=VALUES(role)',
+      [groupId, email, 'member']
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('add member error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Remove member from group
+app.delete('/api/groups/:groupId/members/:email', async (req, res) => {
+  const { groupId, email } = req.params;
+  try {
+    await pool.query('DELETE FROM group_members WHERE group_id = ? AND email = ?', [groupId, email]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('remove member error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ===== MESSAGING ENDPOINTS =====
+
+// Send message to group
+app.post('/api/groups/:groupId/messages', async (req, res) => {
+  const { groupId } = req.params;
+  const { email, content } = req.body;
+  if (!email || !content) return res.status(400).json({ error: 'email and content required' });
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO messages (group_id, sender_email, content) VALUES (?, ?, ?)',
+      [groupId, email, content]
+    );
+    res.json({ ok: true, messageId: result.insertId });
+  } catch (err) {
+    console.error('send message error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Get group messages
+app.get('/api/groups/:groupId/messages', async (req, res) => {
+  const { groupId } = req.params;
+  const limit = req.query.limit || 50;
+  try {
+    const [messages] = await pool.query(
+      `SELECT m.*, p.fullName, p.branch
+       FROM messages m
+       JOIN profiles p ON m.sender_email = p.email
+       WHERE m.group_id = ?
+       ORDER BY m.created_at DESC
+       LIMIT ?`,
+      [groupId, parseInt(limit)]
+    );
+    res.json({ messages: messages.reverse() });
+  } catch (err) {
+    console.error('fetch messages error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ===== CONNECTION ENDPOINTS =====
+
+// Send connection request
+app.post('/api/connections', async (req, res) => {
+  const { user1Email, user2Email } = req.body;
+  if (!user1Email || !user2Email) {
+    return res.status(400).json({ error: 'both emails required' });
+  }
+  try {
+    // Ensure consistent ordering
+    const [first, second] = [user1Email, user2Email].sort();
+    await pool.query(
+      `INSERT INTO connections (user1_email, user2_email, status) VALUES (?, ?, 'pending')
+       ON DUPLICATE KEY UPDATE status=IF(status='declined', 'pending', status), updated_at=CURRENT_TIMESTAMP`,
+      [first, second]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('create connection error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Get pending connections
+app.get('/api/connections', async (req, res) => {
+  const email = req.query.email;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    const [connections] = await pool.query(
+      `SELECT c.*, 
+        CASE WHEN c.user1_email = ? THEN c.user2_email ELSE c.user1_email END as other_email,
+        p.fullName, p.branch, p.skills, p.bio
+       FROM connections c
+       JOIN profiles p ON (CASE WHEN c.user1_email = ? THEN c.user2_email ELSE c.user1_email END) = p.email
+       WHERE (c.user1_email = ? OR c.user2_email = ?) AND c.status = 'pending'`,
+      [email, email, email, email]
+    );
+    const parsed = connections.map(c => ({
+      ...c,
+      skills: JSON.parse(c.skills || '[]')
+    }));
+    res.json({ connections: parsed });
+  } catch (err) {
+    console.error('fetch connections error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Accept/decline connection
+app.post('/api/connections/respond', async (req, res) => {
+  const { user1Email, user2Email, status } = req.body;
+  if (!user1Email || !user2Email || !status) {
+    return res.status(400).json({ error: 'all fields required' });
+  }
+  try {
+    const [first, second] = [user1Email, user2Email].sort();
+    await pool.query(
+      'UPDATE connections SET status = ? WHERE user1_email = ? AND user2_email = ?',
+      [status, first, second]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('update connection error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ===== MESSAGING ENDPOINTS =====
+
 
 // Store Google tokens for user
 app.post('/api/google/auth', async (req, res) => {

@@ -245,7 +245,18 @@ function connectGoogleFromHome() {
     alert('Google API not ready. Please refresh the page.');
     return;
   }
-  gapi.auth2.getAuthInstance().signIn().then(() => {
+  gapi.auth2.getAuthInstance().signIn().then(async () => {
+    // Store token on backend
+    const profile = JSON.parse(localStorage.getItem('crewmatchProfile') || '{}');
+    const auth = gapi.auth2.getAuthInstance();
+    const currentUser = auth.currentUser.get();
+    const idToken = currentUser.getAuthResponse().id_token;
+    
+    if (profile.email) {
+      await crewmatchAPI.storeGoogleAuth(profile.email, currentUser.getAuthResponse().accessToken, null);
+      await crewmatchAPI.syncEvents(profile.email, currentUser.getAuthResponse().accessToken);
+    }
+    
     loadHomeCalendarEvents();
   }).catch(err => {
     console.error('Auth error:', err);
