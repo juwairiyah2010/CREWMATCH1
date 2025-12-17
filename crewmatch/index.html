@@ -51,7 +51,20 @@
         <div class="features-grid">
             <!-- Feature 1 -->
             <div class="feature-card">
-                <div class="feature-icon-container">
+                <div class="feature-icon-container">                # install firebase CLI (one-time)
+                npm install -g firebase-tools
+                
+                # go to your project folder
+                cd /Users/juwairiyah/Desktop/CREWMATCH/crewmatch
+                
+                # log in to Firebase with your Google account
+                firebase login
+                
+                # initialize hosting (follow prompts; set public directory to '.' or 'public' where your index.html is)
+                firebase init hosting
+                
+                # finally deploy
+                firebase deploy
                     <div class="feature-icon">👥</div>
                 </div>
                 <h3>Team Hunting Easy</h3>
