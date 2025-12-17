@@ -87,29 +87,110 @@ function renderHomeCalendarEvents(googleEvents) {
   
   carousel.innerHTML = '';
   
-  googleEvents.forEach(event => {
+  googleEvents.forEach((event, index) => {
     const startTime = new Date(event.start.dateTime || event.start.date);
     const endTime = new Date(event.end.dateTime || event.end.date);
     const formattedDate = formatEventDate(startTime);
     const formattedTime = formatEventTime(startTime, endTime, !event.start.dateTime);
     const description = event.description ? event.description.substring(0, 80) : event.summary.substring(0, 80);
+    const eventId = `home-event-${index}`;
     
     const eventCard = document.createElement('div');
     eventCard.className = 'event-card';
+    eventCard.style.cursor = 'pointer';
+    eventCard.id = eventId;
     eventCard.innerHTML = `
       <div class="event-image" style="background: linear-gradient(135deg, #7c3aed, #06b6d4);"></div>
       <h3>${event.summary || 'Untitled Event'}</h3>
       <p class="event-date">📅 ${formattedDate}</p>
       <p class="event-time" style="color: #6b7280; font-size: 0.9rem;">⏰ ${formattedTime}</p>
       <p class="event-description">${description}${description.length > 80 ? '...' : ''}</p>
-      <button class="event-btn" onclick="window.open('${event.htmlLink}', '_blank')">View Event</button>
+      <button class="event-btn" onclick="event.stopPropagation(); window.open('${event.htmlLink}', '_blank')">View Event</button>
     `;
+    
+    // Add click handler to open event details
+    eventCard.addEventListener('click', () => {
+      openHomeEventModal(event);
+    });
     
     carousel.appendChild(eventCard);
   });
   
-  statusText.textContent = '✅ Loading real events from your Google Calendar';
+  statusText.textContent = '✅ ' + googleEvents.length + ' real event' + (googleEvents.length !== 1 ? 's' : '') + ' from your Google Calendar';
   connectBtn.style.display = 'none';
+}
+
+// Open event modal on home page
+function openHomeEventModal(event) {
+  const startTime = new Date(event.start.dateTime || event.start.date);
+  const endTime = new Date(event.end.dateTime || event.end.date);
+  const formattedDate = formatEventDate(startTime);
+  const formattedTime = formatEventTime(startTime, endTime, !event.start.dateTime);
+  
+  // Create modal if it doesn't exist
+  let modal = document.getElementById('homeEventModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'homeEventModal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    `;
+    document.body.appendChild(modal);
+  }
+  
+  const meetingLink = event.conferenceData?.entryPoints?.[0]?.uri 
+    ? `<div style="margin: 1rem 0; padding: 1rem; background: rgba(124, 58, 237, 0.05); border-left: 3px solid #7c3aed; border-radius: 8px;">
+        <strong style="color: #2c3e50;">🎥 Meeting Link</strong>
+        <p style="color: #6b7280; margin-top: 0.3rem;"><a href="${event.conferenceData.entryPoints[0].uri}" target="_blank" rel="noopener noreferrer" style="color: #7c3aed;">${event.conferenceData.entryPoints[0].uri}</a></p>
+      </div>`
+    : '';
+  
+  modal.innerHTML = `
+    <div style="background: white; padding: 2rem; border-radius: 16px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); position: relative;">
+      <span style="position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; cursor: pointer; color: #6b7280;" onclick="document.getElementById('homeEventModal').remove();">✕</span>
+      
+      <h2 style="font-size: 1.8rem; color: #2c3e50; margin-bottom: 1rem;">${event.summary || 'Untitled Event'}</h2>
+      
+      <div style="margin: 1rem 0; padding: 1rem; background: rgba(124, 58, 237, 0.05); border-left: 3px solid #7c3aed; border-radius: 8px;">
+        <strong style="color: #2c3e50;">📅 Date & Time</strong>
+        <p style="color: #6b7280; margin-top: 0.3rem;">${formattedDate} - ${formattedTime}</p>
+      </div>
+      
+      <div style="margin: 1rem 0; padding: 1rem; background: rgba(124, 58, 237, 0.05); border-left: 3px solid #7c3aed; border-radius: 8px;">
+        <strong style="color: #2c3e50;">📍 Location</strong>
+        <p style="color: #6b7280; margin-top: 0.3rem;">${event.location || 'No location specified'}</p>
+      </div>
+      
+      ${event.description ? `<div style="margin: 1rem 0; padding: 1rem; background: rgba(124, 58, 237, 0.05); border-left: 3px solid #7c3aed; border-radius: 8px;">
+        <strong style="color: #2c3e50;">📝 Description</strong>
+        <p style="color: #6b7280; margin-top: 0.3rem;">${event.description}</p>
+      </div>` : ''}
+      
+      ${meetingLink}
+      
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button onclick="window.open('${event.htmlLink}', '_blank')" style="flex: 1; padding: 0.9rem; background: linear-gradient(135deg, #7c3aed, #06b6d4); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">📅 Open in Google Calendar</button>
+        <button onclick="document.getElementById('homeEventModal').remove()" style="flex: 1; padding: 0.9rem; background: rgba(107, 114, 128, 0.1); color: #6b7280; border: 1px solid rgba(107, 114, 128, 0.3); border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>
+      </div>
+    </div>
+  `;
+  
+  modal.style.display = 'flex';
+  modal.addEventListener('click', (e) => {
+    if (e.target.id === 'homeEventModal') {
+      modal.remove();
+    }
+  });
 }
 
 // Show default events when Google Calendar is not connected
