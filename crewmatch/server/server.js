@@ -2,12 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 
 let pool;
 async function initDb() {
@@ -21,7 +24,7 @@ async function initDb() {
     queueLimit: 0
   });
 
-  // create table if not exists
+  // create tables if not exists
   await pool.query(`
     CREATE TABLE IF NOT EXISTS profiles (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -32,8 +35,46 @@ async function initDb() {
       traits JSON,
       goal VARCHAR(100),
       bio TEXT,
+      google_access_token TEXT,
+      google_refresh_token TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS events (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      email VARCHAR(255) NOT NULL,
+      google_event_id VARCHAR(255) NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      start_time DATETIME,
+      end_time DATETIME,
+      location VARCHAR(255),
+      attendees_count INT,
+      html_link TEXT,
+      meeting_url TEXT,
+      creator VARCHAR(255),
+      is_all_day BOOLEAN,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY unique_event (email, google_event_id),
+      FOREIGN KEY (email) REFERENCES profiles(email) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS event_invitations (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      event_id INT NOT NULL,
+      inviter_email VARCHAR(255) NOT NULL,
+      invitee_email VARCHAR(255) NOT NULL,
+      status ENUM('pending', 'accepted', 'declined') DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+      FOREIGN KEY (inviter_email) REFERENCES profiles(email) ON DELETE CASCADE,
+      FOREIGN KEY (invitee_email) REFERENCES profiles(email) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 }
@@ -138,7 +179,228 @@ app.get('/api/matches', async (req, res) => {
   }
 });
 
-// health
+// ===== GOOGLE CALENDAR ENDPOINTS =====
+
+// Store Google tokens for user
+app.post('/api/google/auth', async (req, res) => {
+  const { email, accessToken, refreshToken } = req.body;
+  if (!email || !accessToken) {
+    return res.status(400).json({ error: 'email and accessToken required' });
+  }
+  try {
+    await pool.query(
+      'UPDATE profiles SET google_access_token = ?, google_refresh_token = ? WHERE email = ?',
+      [accessToken, refreshToken || null, email]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('google auth error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Get user's Google access token
+app.get('/api/google/token', async (req, res) => {
+  const email = req.query.email;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    const [rows] = await pool.query('SELECT google_access_token FROM profiles WHERE email = ?', [email]);
+    if (!rows || rows.length === 0) return res.status(404).json({ error: 'profile not found' });
+    res.json({ accessToken: rows[0].google_access_token });
+  } catch (err) {
+    console.error('token fetch error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Fetch and sync events from Google Calendar
+app.post('/api/events/sync', async (req, res) => {
+  const { email, accessToken } = req.body;
+  if (!email || !accessToken) {
+    return res.status(400).json({ error: 'email and accessToken required' });
+  }
+  try {
+    // Fetch events from Google Calendar API
+    const response = await axios.get('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      params: {
+        timeMin: new Date().toISOString(),
+        maxResults: 50,
+        singleEvents: true,
+        orderBy: 'startTime'
+      }
+    });
+
+    const googleEvents = response.data.items || [];
+
+    // Store events in database
+    for (const event of googleEvents) {
+      const startTime = event.start.dateTime || event.start.date;
+      const endTime = event.end.dateTime || event.end.date;
+      
+      await pool.query(
+        `INSERT INTO events (email, google_event_id, title, description, start_time, end_time, location, attendees_count, html_link, meeting_url, creator, is_all_day)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE title=VALUES(title), description=VALUES(description), start_time=VALUES(start_time), end_time=VALUES(end_time), location=VALUES(location), attendees_count=VALUES(attendees_count), updated_at=CURRENT_TIMESTAMP`,
+        [
+          email,
+          event.id,
+          event.summary || 'Untitled Event',
+          event.description || null,
+          startTime,
+          endTime,
+          event.location || null,
+          event.attendees ? event.attendees.length : 0,
+          event.htmlLink || null,
+          event.conferenceData?.entryPoints?.[0]?.uri || null,
+          event.creator?.displayName || event.creator?.email || null,
+          !event.start.dateTime ? 1 : 0
+        ]
+      );
+    }
+
+    res.json({ ok: true, synced: googleEvents.length });
+  } catch (err) {
+    console.error('sync error', err);
+    res.status(500).json({ error: 'failed to sync events' });
+  }
+});
+
+// Get user's synced events
+app.get('/api/events', async (req, res) => {
+  const email = req.query.email;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    const [events] = await pool.query(
+      'SELECT * FROM events WHERE email = ? ORDER BY start_time ASC',
+      [email]
+    );
+    res.json({ events });
+  } catch (err) {
+    console.error('fetch events error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Get single event by ID
+app.get('/api/events/:eventId', async (req, res) => {
+  const { eventId } = req.params;
+  const email = req.query.email;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM events WHERE id = ? AND email = ?',
+      [eventId, email]
+    );
+    if (!rows || rows.length === 0) return res.status(404).json({ error: 'event not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('fetch event error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Find teammates for an event
+app.get('/api/events/:eventId/teammates', async (req, res) => {
+  const { eventId } = req.params;
+  const email = req.query.email;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    // Get the event
+    const [eventRows] = await pool.query(
+      'SELECT * FROM events WHERE id = ? AND email = ?',
+      [eventId, email]
+    );
+    if (!eventRows || eventRows.length === 0) return res.status(404).json({ error: 'event not found' });
+    const event = eventRows[0];
+
+    // Find other users who have the same event
+    const [teammates] = await pool.query(
+      `SELECT DISTINCT p.* FROM profiles p
+       INNER JOIN events e ON p.email = e.email
+       WHERE e.google_event_id = ? AND p.email <> ?`,
+      [event.google_event_id, email]
+    );
+
+    const parsed = teammates.map(t => ({
+      ...t,
+      skills: JSON.parse(t.skills || '[]'),
+      traits: JSON.parse(t.traits || '{}')
+    }));
+
+    res.json({ teammates: parsed });
+  } catch (err) {
+    console.error('teammates error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Invite teammate to event
+app.post('/api/events/invite', async (req, res) => {
+  const { eventId, inviterEmail, inviteeEmail } = req.body;
+  if (!eventId || !inviterEmail || !inviteeEmail) {
+    return res.status(400).json({ error: 'all fields required' });
+  }
+  try {
+    await pool.query(
+      `INSERT INTO event_invitations (event_id, inviter_email, invitee_email, status)
+       VALUES (?, ?, ?, 'pending')`,
+      [eventId, inviterEmail, inviteeEmail]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('invite error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Get invitations for user
+app.get('/api/invitations', async (req, res) => {
+  const email = req.query.email;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    const [invitations] = await pool.query(
+      `SELECT inv.*, e.title, e.start_time, e.location, p.fullName, p.branch, p.skills
+       FROM event_invitations inv
+       JOIN events e ON inv.event_id = e.id
+       JOIN profiles p ON inv.inviter_email = p.email
+       WHERE inv.invitee_email = ?
+       ORDER BY inv.created_at DESC`,
+      [email]
+    );
+
+    const parsed = invitations.map(inv => ({
+      ...inv,
+      skills: JSON.parse(inv.skills || '[]')
+    }));
+
+    res.json({ invitations: parsed });
+  } catch (err) {
+    console.error('fetch invitations error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// Respond to invitation
+app.post('/api/invitations/:invitationId/respond', async (req, res) => {
+  const { invitationId } = req.params;
+  const { status } = req.body;
+  if (!['accepted', 'declined'].includes(status)) {
+    return res.status(400).json({ error: 'invalid status' });
+  }
+  try {
+    await pool.query(
+      'UPDATE event_invitations SET status = ? WHERE id = ?',
+      [status, invitationId]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('update invitation error', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ===== HEALTH CHECK =====
 app.get('/health', (req, res) => res.json({ ok: true }));
 
 initDb().then(() => {
