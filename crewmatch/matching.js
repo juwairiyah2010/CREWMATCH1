@@ -4,7 +4,7 @@
 const teammateCandidates = [
   {
     id: 1,
-    name: "Aarav Sharma",
+    name: "kaushiki",
     branch: "cse",
     skills: ["coding", "problem-solving", "leadership"],
     traits: { trait1: "extrovert", trait2: "analytical", trait3: "flexible", trait4: "collaborative" },
@@ -13,7 +13,7 @@ const teammateCandidates = [
   },
   {
     id: 2,
-    name: "Priya Desai",
+    name: "isha",
     branch: "design",
     skills: ["design", "communication", "creativity"],
     traits: { trait1: "extrovert", trait2: "creative", trait3: "flexible", trait4: "collaborative" },
@@ -22,7 +22,7 @@ const teammateCandidates = [
   },
   {
     id: 3,
-    name: "Vikram Patel",
+    name: "lavi",
     branch: "cse",
     skills: ["coding", "research", "problem-solving"],
     traits: { trait1: "introvert", trait2: "analytical", trait3: "organized", trait4: "independent" },
@@ -31,7 +31,7 @@ const teammateCandidates = [
   },
   {
     id: 4,
-    name: "Neha Singh",
+    name: "prachi",
     branch: "business",
     skills: ["marketing", "communication", "leadership"],
     traits: { trait1: "extrovert", trait2: "creative", trait3: "organized", trait4: "collaborative" },
