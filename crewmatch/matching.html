@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrewMatch - AI Team Matching</title>
+    <link rel="stylesheet" href="matching.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDyWH-g-2zO90lL6xY-4Yl8_RzKZjgPdI&libraries=places"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <span class="logo-text">🎯 CrewMatch</span>
+                </div>
+            </div>
+            <div class="nav-right">
+                <button class="groups-btn">👥 Groups</button>
+                <button id="profileBtn" class="profile-btn">Profile</button>
+                <button class="back-btn" onclick="goHome()">← Back to Home</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Creation Section -->
+    <div id="profileSection" class="section active">
+        <div class="container">
+            <div class="profile-header">
+                <h1>Create Your Profile</h1>
+                <p>Tell us about yourself so we can find your perfect teammates</p>
+            </div>
+
+            <form id="profileForm" class="profile-form">
+                <!-- Basic Info -->
+                <div class="form-section">
+                    <h2>Basic Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Your name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="branch">Branch/Field of Study *</label>
+                        <select id="branch" name="branch" required>
+                            <option value="">Select your branch</option>
+                            <option value="cse">Computer Science & Engineering</option>
+                            <option value="ece">Electronics & Communication</option>
+                            <option value="mech">Mechanical Engineering</option>
+                            <option value="civil">Civil Engineering</option>
+                            <option value="design">Design & UI/UX</option>
+                            <option value="business">Business & Management</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="form-section">
+                    <h2>Your Skills</h2>
+                    <p class="section-desc">Select at least 3 skills</p>
+                    
+                    <div class="skills-grid">
+                        <label class="skill-checkbox">
+                            <input type="checkbox" name="skills" value="leadership">
+                            <span class="skill-label">👥 Leadership</span>
+                        </label>
+                        <label class="skill-checkbox">
+                            <input type="checkbox" name="skills" value="coding">
+                            <span class="skill-label">💻 Coding</span>
+                        </label>
+                        <label class="skill-checkbox">
+                            <input type="checkbox" name="skills" value="design">
+                            <span class="skill-label">🎨 Design</span>
+                        </label>
+                        <label class="skill-checkbox">
+                            <input type="checkbox" name="skills" value="communication">
+                            <span class="skill-label">💬 Communication</span>
+                        </label>
+                        <label class="skill-checkbox">
+                            <input type="checkbox" name="skills" value="problem-solving">
+                            <span class="skill-label">🧩 Problem Solving</span>
+                        </label>
+                        <label class="skill-checkbox">
+                            <input type="checkbox" name="skills" value="research">
+                            <span class="skill-label">🔬 Research</span>
+                        </label>
+                        <label class="skill-checkbox">
+                            <input type="checkbox" name="skills" value="marketing">
+                            <span class="skill-label">📱 Marketing</span>
+                        </label>
+                        <label class="skill-checkbox">
+                            <input type="checkbox" name="skills" value="project-management">
+                            <span class="skill-label">📊 Project Management</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Personality Traits -->
+                <div class="form-section">
+                    <h2>Personality Traits</h2>
+                    <p class="section-desc">How would you describe yourself?</p>
+                    
+                    <div class="traits-grid">
+                        <label class="trait-radio">
+                            <input type="radio" name="trait1" value="introvert">
+                            <span class="trait-label">🤫 Introvert</span>
+                        </label>
+                        <label class="trait-radio">
+                            <input type="radio" name="trait1" value="extrovert">
+                            <span class="trait-label">🎉 Extrovert</span>
+                        </label>
+
+                        <label class="trait-radio">
+                            <input type="radio" name="trait2" value="analytical">
+                            <span class="trait-label">🧠 Analytical</span>
+                        </label>
+                        <label class="trait-radio">
+                            <input type="radio" name="trait2" value="creative">
+                            <span class="trait-label">✨ Creative</span>
+                        </label>
+
+                        <label class="trait-radio">
+                            <input type="radio" name="trait3" value="organized">
+                            <span class="trait-label">📋 Organized</span>
+                        </label>
+                        <label class="trait-radio">
+                            <input type="radio" name="trait3" value="flexible">
+                            <span class="trait-label">🌊 Flexible</span>
+                        </label>
+
+                        <label class="trait-radio">
+                            <input type="radio" name="trait4" value="collaborative">
+                            <span class="trait-label">🤝 Collaborative</span>
+                        </label>
+                        <label class="trait-radio">
+                            <input type="radio" name="trait4" value="independent">
+                            <span class="trait-label">🦸 Independent</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Goals & Interests -->
+                <div class="form-section">
+                    <h2>What Are You Looking For?</h2>
+                    
+                    <div class="form-group">
+                        <label for="goal">Primary Goal *</label>
+                        <select id="goal" name="goal" required>
+                            <option value="">Select your primary goal</option>
+                            <option value="hackathon">Hackathon Participation</option>
+                            <option value="startup">Startup Building</option>
+                            <option value="learning">Learning & Growth</option>
+                            <option value="competition">Competition</option>
+                            <option value="project">Project Development</option>
+                            <option value="networking">Networking</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bio">Tell us about yourself (Bio)</label>
+                        <textarea id="bio" name="bio" placeholder="Share your interests, achievements, or what makes you unique..." rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- Location Preference -->
+                <div class="form-section">
+                    <h2>Work Location Preference</h2>
+                    <p class="section-desc">Where do you prefer to collaborate?</p>
+                    
+                    <div class="location-grid">
+                        <label class="location-option">
+                            <input type="radio" name="locationPreference" value="remote" required>
+                            <div class="location-card">
+                                <span class="location-icon">💻</span>
+                                <span class="location-name">Remote</span>
+                                <span class="location-desc">Work from anywhere</span>
+                            </div>
+                        </label>
+                        <label class="location-option">
+                            <input type="radio" name="locationPreference" value="in-person" required onchange="showCampusLocations()">
+                            <div class="location-card">
+                                <span class="location-icon">🏢</span>
+                                <span class="location-name">In-Person</span>
+                                <span class="location-desc">Meet on campus/office</span>
+                            </div>
+                        </label>
+                        <label class="location-option">
+                            <input type="radio" name="locationPreference" value="hybrid" required>
+                            <div class="location-card">
+                                <span class="location-icon">🔄</span>
+                                <span class="location-name">Hybrid</span>
+                                <span class="location-desc">Mix of both</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Google Maps for Campus Locations -->
+                    <div id="locationMapContainer" style="display: none; margin-top: 2rem;">
+                        <p class="section-desc" style="margin-bottom: 1rem;">📍 Select your campus or meeting location:</p>
+                        <div id="locationMap" style="width: 100%; height: 300px; border-radius: 15px; border: 2px solid rgba(124, 58, 237, 0.3); overflow: hidden; margin-bottom: 1rem;"></div>
+                        <div id="locationsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem;"></div>
+                        <input type="hidden" id="selectedLocation" name="selectedLocation" value="">
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Profile & Start Matching</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Matching Section -->
+    <div id="matchingSection" class="section">
+        <div class="container">
+            <div class="matching-header">
+                <h1>🤖 AI Team Matching</h1>
+                <p>Based on your profile, here are your perfect matches</p>
+            </div>
+
+            <!-- Matching Chat/Display Area -->
+            <div class="matching-container">
+                <!-- User Profile Summary -->
+                <div class="user-profile-summary">
+                    <h3>Your Profile</h3>
+                    <div id="profileSummary" class="summary-content">
+                        <!-- Will be filled by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- AI Matching Results -->
+                <div class="matches-area">
+                    <div class="ai-message">
+                        <div class="message-content">
+                            <p>🎯 Analyzing your profile...</p>
+                            <p style="font-size: 0.9em; color: #b0b0d0; margin-top: 0.5em;">Using AI to match you with compatible teammates based on skills, personality, and goals.</p>
+                        </div>
+                    </div>
+
+                    <div id="matchesContainer" class="matches-grid">
+                        <!-- AI will generate matches here -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="refineMatching()">🔄 Refine Matches</button>
+                    <button class="btn btn-secondary" onclick="viewMoreMatches()">👥 View More Matches</button>
+                    <button class="btn btn-success" onclick="startMessaging()">💬 Start Messaging Matches</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="toast.js"></script>
+    <script src="matching.js"></script>
+</body>
+</html>

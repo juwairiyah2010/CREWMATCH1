@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CrewMatch — Groups & Chat</title>
+  <link rel="stylesheet" href="matching.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <div class="logo"><span class="logo-text">🎯 CrewMatch</span></div>
+      </div>
+      <div class="nav-right">
+        <button class="back-btn" onclick="goHome()">← Home</button>
+        <button id="profileBtn" class="profile-btn">Profile</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" style="padding-top:100px;">
+    <header style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.25rem;">
+      <div>
+        <h1 style="font-size:1.8rem; margin-bottom:0.2rem;">Groups & Chat</h1>
+        <p style="color:#b0b0d0; margin:0;">Community spaces, general match chat, and private groups — talk with teammates and make plans.</p>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <input id="groupSearch" placeholder="Search groups or messages" style="padding:0.6rem 0.9rem; border-radius:10px; border:1px solid rgba(138,43,226,0.2); background: rgba(138,43,226,0.03); color:#e0e0e0;" />
+        <button class="btn btn-primary" id="newGroupBtn">+ New Group</button>
+      </div>
+    </header>
+
+    <section class="groups-grid" style="display:grid; grid-template-columns:300px 1fr; gap:1.5rem;">
+      <!-- Left column: rooms list -->
+      <aside style="background: linear-gradient(135deg, rgba(138,43,226,0.08), rgba(0,191,255,0.02)); border:1px solid rgba(138,43,226,0.18); border-radius:15px; padding:1rem; height:calc(100vh - 170px); overflow:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem;">
+          <div style="font-weight:700; color:#fff;">Chats</div>
+          <small style="color:#b0b0d0;">Online</small>
+        </div>
+
+        <div class="room-section">
+          <div style="font-size:0.9rem; margin:0.4rem 0; color:#8a2be2; font-weight:700;">Community</div>
+          <ul id="roomList" style="list-style:none; padding-left:0; display:flex; flex-direction:column; gap:0.4rem;">
+            <!-- Rooms are injected here -->
+          </ul>
+        </div>
+
+        <hr style="opacity:0.06; margin:1rem 0;" />
+
+        <div style="color:#8a2be2; font-weight:700; font-size:0.9rem; margin-bottom:0.6rem;">Private Groups</div>
+        <ul id="privateGroupsList" style="list-style:none; padding-left:0; display:flex; flex-direction:column; gap:0.4rem;">
+        </ul>
+
+      </aside>
+
+      <!-- Right column: chat area -->
+      <article style="background: linear-gradient(135deg, rgba(138,43,226,0.05), rgba(0,191,255,0.02)); border:1px solid rgba(138,43,226,0.18); border-radius:15px; padding:0.75rem; display:flex; flex-direction:column; height:calc(100vh - 170px);">
+
+        <div id="chatHeader" style="padding:0.8rem; border-bottom:1px solid rgba(255,255,255,0.03); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div id="roomTitle" style="font-weight:700; font-size:1.05rem;">Community</div>
+            <div id="roomSubtitle" style="color:#b0b0d0; font-size:0.9rem;">LFG, events, announcements — everyone is welcome</div>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <button class="btn btn-secondary" id="leaveRoomBtn">Leave</button>
+            <button class="btn btn-primary" id="inviteBtn">Invite</button>
+          </div>
+        </div>
+
+        <div id="messagesContainer" style="flex:1; overflow:auto; padding:1rem; display:flex; flex-direction:column; gap:0.6rem;">
+          <!-- messages appended here -->
+        </div>
+
+        <div style="padding:0.75rem; border-top:1px solid rgba(255,255,255,0.03); display:flex; gap:0.75rem; align-items:center;">
+          <input id="messageInput" placeholder="Type a message..." style="flex:1; padding:0.8rem; border-radius:12px; border:1px solid rgba(255,255,255,0.03); background:rgba(255,255,255,0.02); color:#e0e0e0;" />
+          <button class="btn btn-primary" id="sendMsg">Send</button>
+        </div>
+
+        <div style="padding:0.6rem 0.8rem; color:#8a2be2; font-size:0.85rem; border-top:1px dashed rgba(138,43,226,0.06);">Tip: Click a private group to open the private chat — you can create one using the + New Group button.</div>
+      </article>
+    </section>
+
+    <!-- modal for new group creation -->
+    <div id="newGroupModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <h2>Create Private Group</h2>
+        <p style="color:#b0b0d0; margin:0.5rem 0 1rem 0;">Create a private group and invite teammates.</p>
+        <input id="newGroupName" placeholder="Group name" style="padding:0.8rem; width:100%; border-radius:8px;" />
+        <input id="newGroupMembers" placeholder="Add members (comma-separated emails)" style="padding:0.8rem; width:100%; border-radius:8px; margin-top:0.5rem;" />
+        <div style="display:flex; gap:0.5rem; margin-top:1rem; justify-content:center;">
+          <button id="createGroupConfirm" class="form-btn">Create</button>
+          <button id="createGroupCancel" class="match-btn match-btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="toast.js"></script>
+  <script src="groups.js"></script>
+</body>
+</html>

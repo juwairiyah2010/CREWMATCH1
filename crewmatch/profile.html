@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CrewMatch — Profile</title>
+  <link rel="stylesheet" href="matching.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <div class="logo">
+          <span class="logo-text" onclick="goHome()">🎯 CrewMatch</span>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button class="back-btn" onclick="goBack()">← Back</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" style="padding-top: 100px;">
+    <div class="form-section" style="max-width:900px;margin:auto;">
+      <h1 style="font-size:2rem; margin-bottom:0.5rem;">Your Profile</h1>
+      <p style="color:#b0b0d0; margin-bottom:1.5rem;">Edit your profile below. Saved profiles are stored locally in your browser.</p>
+
+      <form id="profileEditForm">
+        <div class="form-group">
+          <label for="fullName">Full name *</label>
+          <input id="fullName" type="text" required placeholder="Your full name">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input id="email" type="email" required placeholder="your@email.com">
+        </div>
+
+        <div class="form-group">
+          <label for="branch">Branch/Field of study *</label>
+          <select id="branch">
+            <option value="">Select your branch</option>
+            <option value="cse">Computer Science & Engineering</option>
+            <option value="ece">Electronics & Communication</option>
+            <option value="mech">Mechanical Engineering</option>
+            <option value="civil">Civil Engineering</option>
+            <option value="design">Design & UI/UX</option>
+            <option value="business">Business & Management</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-section" style="margin-top:1rem; margin-bottom:1rem;">
+          <h2 style="font-size:1.05rem; color:#fff; margin-bottom:0.6rem;">Skills (choose at least 3)</h2>
+          <div class="skills-grid">
+            <label class="skill-checkbox"><input type="checkbox" value="leadership"><span class="skill-label">👥 Leadership</span></label>
+            <label class="skill-checkbox"><input type="checkbox" value="coding"><span class="skill-label">💻 Coding</span></label>
+            <label class="skill-checkbox"><input type="checkbox" value="design"><span class="skill-label">🎨 Design</span></label>
+            <label class="skill-checkbox"><input type="checkbox" value="communication"><span class="skill-label">💬 Communication</span></label>
+            <label class="skill-checkbox"><input type="checkbox" value="problem-solving"><span class="skill-label">🧩 Problem Solving</span></label>
+            <label class="skill-checkbox"><input type="checkbox" value="research"><span class="skill-label">🔬 Research</span></label>
+            <label class="skill-checkbox"><input type="checkbox" value="marketing"><span class="skill-label">📱 Marketing</span></label>
+            <label class="skill-checkbox"><input type="checkbox" value="project-management"><span class="skill-label">📊 Project Management</span></label>
+          </div>
+        </div>
+
+        <div class="form-section" style="margin-bottom:1rem;">
+          <h2 style="font-size:1.05rem; color:#fff; margin-bottom:0.6rem;">Personality</h2>
+          <div class="traits-grid">
+            <label class="trait-radio"><input type="radio" name="trait1" value="introvert"><span class="trait-label">🤫 Introvert</span></label>
+            <label class="trait-radio"><input type="radio" name="trait1" value="extrovert"><span class="trait-label">🎉 Extrovert</span></label>
+            <label class="trait-radio"><input type="radio" name="trait2" value="analytical"><span class="trait-label">🧠 Analytical</span></label>
+            <label class="trait-radio"><input type="radio" name="trait2" value="creative"><span class="trait-label">✨ Creative</span></label>
+            <label class="trait-radio"><input type="radio" name="trait3" value="organized"><span class="trait-label">📋 Organized</span></label>
+            <label class="trait-radio"><input type="radio" name="trait3" value="flexible"><span class="trait-label">🌊 Flexible</span></label>
+            <label class="trait-radio"><input type="radio" name="trait4" value="collaborative"><span class="trait-label">🤝 Collaborative</span></label>
+            <label class="trait-radio"><input type="radio" name="trait4" value="independent"><span class="trait-label">🦸 Independent</span></label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="goal">Primary goal</label>
+          <select id="goal">
+            <option value="">Select primary goal</option>
+            <option value="hackathon">Hackathon Participation</option>
+            <option value="startup">Startup Building</option>
+            <option value="learning">Learning & Growth</option>
+            <option value="competition">Competition</option>
+            <option value="project">Project Development</option>
+            <option value="networking">Networking</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Short bio</label>
+          <textarea id="bio" rows="4" placeholder="Share achievements, interests or what you're looking for..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location/City</label>
+          <input id="location" type="text" placeholder="e.g., New York, San Francisco">
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:1.25rem;">
+          <button id="saveBtn" class="form-btn">Save Profile</button>
+          <button id="cancelBtn" type="button" class="match-btn match-btn-secondary">Cancel</button>
+          <button id="goMatching" type="button" class="btn btn-primary">Start Matching</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="toast.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>

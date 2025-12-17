@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrewMatch - Find Your Perfect Team</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <span class="logo-text">🎯 CrewMatch</span>
+                </div>
+                <div class="nav-groups">
+                        <button class="groups-btn">👥 Groups</button>
+                        <button id="profileBtn" class="profile-btn">Profile</button>
+                    </div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+                <li><button class="events-nav-btn" onclick="window.location.href='events.html'">📅 Events</button></li>
+                <li><button class="cta-btn">Get Started</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Find Your Perfect Team</h1>
+            <p class="hero-subtitle">Stop scrolling through WhatsApp. Start building amazing teams with the right people.</p>
+            <button class="hero-cta" onclick="window.location.href='matching.html'">Start Matching Now</button>
+        </div>
+        
+        <!-- 3D Background Elements -->
+        <div class="hero-background">
+            <div class="floating-cube"></div>
+            <div class="floating-sphere"></div>
+            <div class="floating-pyramid"></div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <h2 class="section-title">Why CrewMatch?</h2>
+        <div class="features-grid">
+            <!-- Feature 1 -->
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <div class="feature-icon">👥</div>
+                </div>
+                <h3>Team Hunting Easy</h3>
+                <p>Help students find teammates without endless WhatsApp scrolling. Discover teammates instantly in your network.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <div class="feature-icon">⚡</div>
+                </div>
+                <h3>Match Skills, Not Just Names</h3>
+                <p>Pair people who actually fit together—so no more wondering why you don't have good teammates.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <div class="feature-icon">💬</div>
+                </div>
+                <h3>Chat & Plan Without Drama</h3>
+                <p>Built-in tools to message, plan, and avoid group chaos. Keep everything organized in one place.</p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <div class="feature-icon">⏱️</div>
+                </div>
+                <h3>Save Time, Avoid Stress</h3>
+                <p>Stop wasting hours figuring out who can do what. Automated skill matching saves you time and hassle.</p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <div class="feature-icon">🚀</div>
+                </div>
+                <h3>Solo or Squad-Friendly</h3>
+                <p>Whether you're flying solo or already have friends, find the right people fast and build better teams.</p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <div class="feature-icon">🎉</div>
+                </div>
+                <h3>Discover New Events</h3>
+                <p>See competitions and events happening around you and join the fun. Never miss an opportunity to compete.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Create Your Profile</h3>
+                <p>Tell us about your skills, interests, and what you're looking for in a team.</p>
+                <div class="step-animation"></div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Get Matched</h3>
+                <p>Our AI matches you with students who have complementary skills and similar goals.</p>
+                <div class="step-animation"></div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Connect & Collaborate</h3>
+                <p>Chat with your matches, plan your strategy, and build something amazing together.</p>
+                <div class="step-animation"></div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h3>Win Together</h3>
+                <p>Compete, learn, and grow with your team. Make lasting friendships along the way.</p>
+                <div class="step-animation"></div>
+            </div>
+        </div>
+    </section>
+    <!-- Chat Section -->
+<section id="chat-section" class="chat-container">
+  <h2>💬 Live Chat</h2>
+  <div class="chat-box" id="chat-box">
+    <div class="bot-message">Hi there! How can I help you today?</div>
+  </div>
+  <div class="chat-input-area">
+    <input type="text" id="chat-input" placeholder="Type your message..." />
+    <button id="send-btn">Send</button>
+  </div>
+</section>
+
+    <!-- Events Section -->
+    <section id="events" class="events">
+        <h2 class="section-title">Upcoming Events</h2>
+        <div class="events-carousel">
+            <div class="event-card">
+                <div class="event-image coding"></div>
+                <h3>Hackathon 2025</h3>
+                <p class="event-date">📅 Dec 15-17, 2025</p>
+                <p class="event-description">24-hour coding marathon. Build innovative solutions and win prizes!</p>
+                <button class="event-btn">Join Now</button>
+            </div>
+
+            <div class="event-card">
+                <div class="event-image design"></div>
+                <h3>Design Challenge</h3>
+                <p class="event-date">📅 Dec 22, 2025</p>
+                <p class="event-description">Showcase your UI/UX skills. Design the next big thing.</p>
+                <button class="event-btn">Join Now</button>
+            </div>
+
+            <div class="event-card">
+                <div class="event-image sports"></div>
+                <h3>Sports Tournament</h3>
+                <p class="event-date">📅 Jan 5, 2026</p>
+                <p class="event-description">Team up for basketball, volleyball, and esports competitions.</p>
+                <button class="event-btn">Join Now</button>
+            </div>
+
+            <div class="event-card">
+                <div class="event-image startup"></div>
+                <h3>Startup Pitch</h3>
+                <p class="event-date">📅 Jan 20, 2026</p>
+                <p class="event-description">Pitch your startup idea and find co-founders and investors.</p>
+                <button class="event-btn">Join Now</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2>Ready to Find Your Team?</h2>
+        <p>Join thousands of students already using CrewMatch to build amazing teams</p>
+        <button class="cta-large-btn">Start Your Journey</button>
+    </section>
+        <!-- Get Started Modal -->
+    <div id="get-started-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Join CrewMatch 🚀</h2>
+            <p>Find teammates who match your skills and goals — all in one place!</p>
+
+            <form class="signup-form">
+                <input type="text" placeholder="Full Name" required>
+                <input type="email" placeholder="College Email" required>
+                <input type="text" placeholder="Your Major / Department" required>
+                <textarea placeholder="Describe your skills or interests..." rows="3"></textarea>
+                <button type="submit" class="form-btn">Create My Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Feedback & Reviews Section -->
+    <section id="reviews" class="reviews-section">
+        <h2 class="section-title">💬 User Reviews & Feedback</h2>
+        <p style="text-align: center; color: #b0b0d0; margin-bottom: 2rem;">See what students are saying about CrewMatch</p>
+
+        <!-- Reviews Display Area -->
+        <div class="reviews-container">
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar">😊</div>
+                        <div>
+                            <div class="reviewer-name">Aarav Sharma</div>
+                            <div class="reviewer-branch">Computer Science & Engineering</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                </div>
+                <p class="review-text">"CrewMatch changed my hackathon experience! Found amazing teammates with complementary skills. Highly recommend!"</p>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar">🤓</div>
+                        <div>
+                            <div class="reviewer-name">Priya Desai</div>
+                            <div class="reviewer-branch">Design & UI/UX</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                </div>
+                <p class="review-text">"Instead of wasting hours searching for teammates, CrewMatch matched me instantly with developers and other designers. Amazing platform!"</p>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar">🚀</div>
+                        <div>
+                            <div class="reviewer-name">Vikram Patel</div>
+                            <div class="reviewer-branch">Electronics & Communication</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">⭐⭐⭐⭐</div>
+                </div>
+                <p class="review-text">"Great platform for finding like-minded students. The skill matching algorithm is spot on!"</p>
+            </div>
+        </div>
+
+        <!-- Feedback Form -->
+        <div class="feedback-form-container">
+            <h3>Share Your Feedback</h3>
+            <p style="color: #b0b0d0; margin-bottom: 1.5rem;">Help us improve CrewMatch by sharing your experience</p>
+            
+            <form class="feedback-form" id="feedbackForm">
+                <div class="feedback-form-group">
+                    <label for="feedbackName">Your Name</label>
+                    <input id="feedbackName" type="text" placeholder="Enter your name" required>
+                </div>
+
+                <div class="feedback-form-group">
+                    <label for="feedbackEmail">Email Address</label>
+                    <input id="feedbackEmail" type="email" placeholder="your@email.com" required>
+                </div>
+
+                <div class="feedback-form-group">
+                    <label for="feedbackRating">Rating</label>
+                    <div class="rating-select">
+                        <label><input type="radio" name="rating" value="5"> ⭐⭐⭐⭐⭐ Excellent</label>
+                        <label><input type="radio" name="rating" value="4"> ⭐⭐⭐⭐ Good</label>
+                        <label><input type="radio" name="rating" value="3"> ⭐⭐⭐ Average</label>
+                        <label><input type="radio" name="rating" value="2"> ⭐⭐ Poor</label>
+                        <label><input type="radio" name="rating" value="1"> ⭐ Very Poor</label>
+                    </div>
+                </div>
+
+                <div class="feedback-form-group">
+                    <label for="feedbackMessage">Your Feedback</label>
+                    <textarea id="feedbackMessage" placeholder="Tell us about your experience with CrewMatch..." rows="4" required></textarea>
+                </div>
+
+                <button type="submit" class="form-btn feedback-submit-btn">Submit Feedback</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Privacy Policy Section -->
+    <section id="privacy" class="info-section">
+        <h2>Privacy Policy</h2>
+        <p>We respect your privacy. CrewMatch never sells or shares your personal data. Information is used only to improve team matching and event recommendations. You can delete your profile anytime.</p>
+    </section>
+
+    <!-- Terms and Conditions -->
+    <section id="terms" class="info-section">
+        <h2>Terms & Conditions</h2>
+        <p>By using CrewMatch, you agree to connect respectfully with others. Misuse or spam will result in account suspension. Be kind, collaborate, and have fun building awesome teams!</p>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="info-section contact">
+        <h2>Contact Us</h2>
+        <p>Have a question or feedback? We’d love to hear from you!</p>
+        <form class="contact-form">
+            <input type="text" placeholder="Your Name" required>
+            <input type="email" placeholder="Your Email" required>
+            <textarea placeholder="Your Message..." rows="4" required></textarea>
+            <button type="submit" class="form-btn">Send Message</button>
+        </form>
+    </section>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollTopBtn" title="Go to top">⬆️</button>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 CrewMatch. Made for students, by students. 🎓</p>
+            <div class="footer-links">
+                <a href="#privacy">Privacy</a>
+                <a href="#terms">Terms</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="toast.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>                            
